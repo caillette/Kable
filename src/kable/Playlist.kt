@@ -4,6 +4,7 @@ import kable.action.ConsoleMessage
 import tooling.ActionResult
 import tooling.Connection
 import tooling.Deferred
+import tooling.Flag
 import java.util.*
 
 
@@ -23,6 +24,10 @@ open class Playlist {
   fun deferredResult() : Deferred< ActionResult > {
     // TODO: grap a reference to last-added Action, if it supports deferring.
     return Deferred()
+  }
+
+  fun newFlag() : Flag {
+    return Flag()
   }
 
   val actions : List< Action >
@@ -46,6 +51,13 @@ open class Playlist {
       timeout : Int = 10000
   ) {
 
+  }
+
+  fun If(
+      flag : Deferred< Boolean >,
+      block : Playlist.() -> Unit
+  ) : ElseClauseAcceptor {
+    return If( flag, { it }, block )
   }
 
   fun< T > If(
