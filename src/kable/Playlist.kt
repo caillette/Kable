@@ -26,6 +26,10 @@ open class Playlist {
     return Deferred()
   }
 
+  fun< T > deferredResult( transformer : ( ActionResult ) -> T ) : Deferred< T > {
+    return Deferred()
+  }
+
   fun newFlag() : Flag {
     return Flag()
   }
@@ -52,6 +56,29 @@ open class Playlist {
   ) {
 
   }
+  
+  fun onlyIf( flag : Deferred< Boolean > ) {
+    
+  }
+  
+  fun< T > onlyIf(       
+      deferred : Deferred< T >,
+      predicate : ( T ) -> Boolean
+  ) {
+    
+  }
+  
+  fun unless( flag : Deferred< Boolean > ) {
+    
+  }
+  
+  fun< T > unless(       
+      deferred : Deferred< T >,
+      predicate : ( T ) -> Boolean
+  ) {
+    
+  }
+  
 
   fun If(
       flag : Deferred< Boolean >,

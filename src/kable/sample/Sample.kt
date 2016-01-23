@@ -12,6 +12,9 @@ fun main( arguments : Array< String > ) {
 
   val playbook = Playbook.new {
 
+    val flag1 = newFlag()
+    val flag2 = newFlag()
+
     - "Say something in the console."
 
     - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" )
@@ -19,12 +22,13 @@ fun main( arguments : Array< String > ) {
       modifiers( connection = Connection.LOCAL, ignoreErrors = true, runOnce = true )
 
     - User( name = "alice" )
+      val userAlice = deferredResult( { it.stdout } ) // Result transformation.
+
     - User( name = "bob" )
       val userBob = deferredResult() // Switches to asynchronous execution.
 
     - WaitForCompletion( expand ) // Kind of barrier, wait for 'Expand' to end.
 
-    val flag1 = newFlag()
 
     // Evaluating 'expand' waits for completion.
     // Then we apply some predicate on the result itself. There are predefined ones.
@@ -37,6 +41,13 @@ fun main( arguments : Array< String > ) {
 
     If( flag1 ) {
       - "Restart some service."
+    }
+
+    - Expand( "some/file", "destination" )
+      unless( flag2 ) // Raise an error, flag2 was never set.
+
+    If( userAlice, { it.contains( "created" ) } ) {
+      - "Pre-processed execution result matches expected value."
     }
   }
 
