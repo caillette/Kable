@@ -30,6 +30,12 @@ open class Playlist {
     return Deferred()
   }
 
+  infix fun< RAW, TRANSFORMED > Deferred< RAW >.modifiedBy(
+      transformer : ( RAW ) -> TRANSFORMED
+  ) : Deferred< TRANSFORMED > {
+    return Deferred()
+  }
+
   fun modifiers(
       connection : Connection = Connection.REMOTE,
       ignoreErrors : Boolean = true,
@@ -37,21 +43,6 @@ open class Playlist {
       timeout : Int = 10000
   ) {
     /** Modify last-added [Action]. */
-  }
-
-  fun< RAW, TRANSFORMED > capture(
-      deferred : Boolean = false ,
-      transformer : ( ( RAW ) -> TRANSFORMED )? = null
-  ) : ContinuationKeywordAcceptor< RAW, TRANSFORMED > {
-    return object : ContinuationKeywordAcceptor< RAW, TRANSFORMED > {
-      override fun on( deferredResult : Deferred< RAW > ) : Deferred< TRANSFORMED > {
-        if( transformer == null ) {
-          return Deferred()
-        } else {
-          return Deferred() // Include the transformation somehow.
-        }
-      }
-    }
   }
 
   interface ContinuationKeywordAcceptor< RAW, TRANSFORMED > {

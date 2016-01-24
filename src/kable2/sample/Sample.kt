@@ -10,11 +10,14 @@ fun main( arguments : Array< String > ) {
 
     - "Let's run some Action asynchronously."
 
-//    val expand = capture() on
-    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib")
+    val expand =
+    - Expand(
+        archiveFilename = "/jre.tar",
+        destination = "/var/lib"
+      ) modifiedBy { it.stdout }
 
 
-
+    println( expand )
   }
 
   playbook.print()

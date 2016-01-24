@@ -1,5 +1,7 @@
 package tooling
 
+import kotlin.reflect.defaultType
+
 open class Deferred< VALUE > {
 
   operator fun invoke() : VALUE {
@@ -13,6 +15,11 @@ open class Deferred< VALUE > {
     ) : Deferred< TRANSFORMED > {
       return Deferred() ;
     }
+  }
+
+  override fun toString() : String {
+
+    return "${this.javaClass.kotlin.defaultType}@${System.identityHashCode(this)}"
   }
 }
 
