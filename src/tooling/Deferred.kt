@@ -1,11 +1,19 @@
 package tooling
 
-open class Deferred< E > {
+open class Deferred< VALUE > {
 
-  val value : E
-    get() { throw IllegalStateException() }
+  operator fun invoke() : VALUE {
+    throw UnsupportedOperationException( "TODO: wait for completion" )
+  }
 
-  operator fun invoke() : E { throw IllegalStateException() }
+  companion object {
+    fun< RAW, TRANSFORMED > new(
+        raw : Deferred< RAW >,
+        transformer : ( RAW ) -> TRANSFORMED
+    ) : Deferred< TRANSFORMED > {
+      return Deferred() ;
+    }
+  }
 }
 
 public class Flag : Deferred< Boolean >()

@@ -21,7 +21,49 @@ open class Playlist {
     return Deferred()
   }
 
+  infix fun < RESULT > add( action : Action ) : Deferred< RESULT >{
+    _actions.add( action )
+    return Deferred()
+  }
 
+  fun< RAW, TRANSFORMED > capture(
+      deferred : Boolean = false ,
+      transformer : ( ( RAW ) -> TRANSFORMED )? = null
+  ) : OnKeywordAcceptor< RAW, TRANSFORMED > {
+    return object : OnKeywordAcceptor< RAW, TRANSFORMED > {
+      override fun on( deferredResult : Deferred< RAW > ) : Deferred< TRANSFORMED > {
+        if( transformer == null ) {
+          return Deferred()
+        } else {
+          return Deferred()
+        }
+      }
+    }
+  }
+
+  fun justCapture(
+      deferred : Boolean = false
+  ) : OnKeywordAcceptor< ActionResult, ActionResult > {
+    return capture( deferred, null )
+  }
+
+/*
+  fun< A > capture(
+      deferred : Boolean = false
+  ) : OnKeywordAcceptor< A, A > {
+    return object : OnKeywordAcceptor< A, A > {
+      override fun on( deferredActionResult : Deferred< A > ) : Deferred< A > {
+        return Deferred()
+      }
+    }
+  }
+*/
+
+  interface OnKeywordAcceptor< RAW, TRANSFORMED > {
+    infix fun on( deferredResult : Deferred< RAW > ) : Deferred< TRANSFORMED >
+  }
+
+  @Deprecated( "", ReplaceWith("Deferred()", "tooling.Deferred" ) )
   fun deferredResult() : Deferred< ActionResult > {
     // TODO: grap a reference to last-added Action, if it supports deferring.
     return Deferred()

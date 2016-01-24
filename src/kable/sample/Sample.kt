@@ -36,6 +36,12 @@ fun main( arguments : Array< String > ) {
     - User( name = "bob" )
       val userBob = deferredResult() // Switches to asynchronous execution.
 
+    val userCharlie = justCapture() on
+    - User( name = "charlie" )
+
+    val userDelta = capture< ActionResult, String >( transformer = { it.stdout } ) on
+    - User( name = "delta" )
+
     - WaitForCompletion( expand ) // Kind of barrier, wait for 'Expand' to end.
 
 
