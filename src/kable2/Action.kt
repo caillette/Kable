@@ -12,7 +12,12 @@ interface Action< RESULT > {
         val stderr : String,
         val stdoutLines : List< String >,
         val executionDuration : Duration
-    )
+    ) {
+      companion object {
+        val RETURN_CODE_0 : ( ProcessExecution ) -> Boolean = { it.returnCode == 0 }
+      }
+
+    }
 
     class None
 

@@ -30,13 +30,14 @@ open class Playlist {
     return Deferred()
   }
 
-  infix fun< RAW, TRANSFORMED > Deferred< RAW >.modifiedBy(
+  infix fun< RAW, TRANSFORMED > Deferred< RAW >.resultTransformedWith(
       transformer : ( RAW ) -> TRANSFORMED
   ) : Deferred< TRANSFORMED > {
     return Deferred()
   }
 
   fun modifiers(
+      defer : Boolean = false,
       connection : Connection = Connection.REMOTE,
       ignoreErrors : Boolean = true,
       runOnce : Boolean = true,
