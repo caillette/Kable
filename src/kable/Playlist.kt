@@ -16,8 +16,9 @@ open class Playlist {
     _actions.add( ConsoleMessage( this ) )
   }
 
-  operator fun Action.unaryMinus() {
+  operator fun Action.unaryMinus() : Deferred< ActionResult >{
     _actions.add( this )
+    return Deferred()
   }
 
 

@@ -1,0 +1,38 @@
+
+Playbook2 {
+
+    // 1. Naked action.
+    
+    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" )
+
+
+    // 2. Use modifiers.
+
+    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" ) +
+      modifiers( connection = Connection.LOCAL, ignoreErrors = true, runOnce = true )
+
+
+    // 3. Capture: 'expand' value has type Deferred< ActionResult >.
+    //    Capture causes asynchronous execution. 
+    //    A Deferred object is some kind of Java Future.
+
+    val expand = capture
+    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" )
+
+
+    // 4. Capture with transformation: 'expand' value has type Deferred< String >, 
+    //    because that's what the closure transforms the result into, when available.
+
+    val expand = applying { it.stdout } capture
+    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" ) +
+      modifiers( connection = Connection.LOCAL, ignoreErrors = true, runOnce = true )
+
+
+    // 5. All at once.
+
+    val expand = applying { it.stdout } capture
+    - Expand( archiveFilename = "/Downloads/jre.tar", destination = "/var/lib" ) +
+      modifiers( connection = Connection.LOCAL, ignoreErrors = true, runOnce = true )
+
+
+}

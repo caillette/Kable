@@ -22,7 +22,7 @@ Playbook1 {
   
   // Real type is Capture< Array< String > >
   val networkInterfaces =
-  + cat( "/etc/network/interfaces" ).stdout
+  + cat( "/etc/network/interfaces" ).stdout.lines
   
   + waitFor( jreProgress )
   
@@ -39,6 +39,6 @@ Playbook1 {
 
 
 
-Playbook2( Capture< String > whatever ) {
+Playbook2( Capture< Array< String > > whatever ) {
 
 }

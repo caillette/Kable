@@ -18,39 +18,6 @@ import java.util.Arrays.asList
 
 fun main( arguments : Array< String > ) {
 
-  val drbdAnalysis = DrbdAnalysis(
-      DrbdCluster(
-          deviceName = "/dev/drbd0",
-          partitionName = "/dev/mapper/vgos-realm",
-          mountpoint = "/var/realm",
-          members = asList(
-              Member( "192.168.100.112", 7789, "host-1" ),
-              Member( "192.168.100.122", 7789, "host-2" )
-          )
-      ),
-      Filesystem(
-          blockSizeBytes = 1024,
-          blockCount = 102400,
-          totalSizeBytes = 104857600,
-          unusuedOnPartition = 0
-      ),
-      Partition(
-          fullName = "/dev/mapper/vgos-realm",
-          sectorCount = 204800,
-          sectorSizeBytes = 512,
-          totalSizeBytes = 104857600
-      ),
-      DrbdMetadata(
-          sizeSectors = 80,
-          sizeBytes = 40960,
-          alreadyPresent = false
-      ),
-      FilesystemResize(
-          newSizeMb = 99,
-          newSizeSectors = 204720
-      )
-  )
-
 
   val playbook = Playbook.new {
 
@@ -86,7 +53,7 @@ fun main( arguments : Array< String > ) {
     }
 
     - Expand( "some/file", "destination" )
-      unless( flag2 ) // Raise an error, flag2 was never set.
+    unless( flag2 ) // Raise an error, flag2 was never set.
 
     If( userAlice, { it.contains( "created" ) } ) {
       - "Pre-processed execution result matches expected value."
@@ -94,6 +61,42 @@ fun main( arguments : Array< String > ) {
   }
 
   playbook.print()
+
+
+
+  val drbdAnalysis = DrbdAnalysis(
+      DrbdCluster(
+          deviceName = "/dev/drbd0",
+          partitionName = "/dev/mapper/vgos-realm",
+          mountpoint = "/var/realm",
+          members = asList(
+              Member( "192.168.100.112", 7789, "host-1" ),
+              Member( "192.168.100.122", 7789, "host-2" )
+          )
+      ),
+      Filesystem(
+          blockSizeBytes = 1024,
+          blockCount = 102400,
+          totalSizeBytes = 104857600,
+          unusuedOnPartition = 0
+      ),
+      Partition(
+          fullName = "/dev/mapper/vgos-realm",
+          sectorCount = 204800,
+          sectorSizeBytes = 512,
+          totalSizeBytes = 104857600
+      ),
+      DrbdMetadata(
+          sizeSectors = 80,
+          sizeBytes = 40960,
+          alreadyPresent = false
+      ),
+      FilesystemResize(
+          newSizeMb = 99,
+          newSizeSectors = 204720
+      )
+  )
+
 
 }
 
