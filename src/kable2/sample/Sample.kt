@@ -2,6 +2,7 @@
 package kable2.sample
 
 import kable2.Playbook
+import kable2.action.ExecuteCommand
 import kable2.action.Expand
 import kable2.action.RaiseFlag
 import kable2.action.User
@@ -15,16 +16,50 @@ fun main( arguments : Array< String > ) {
     - "Plain strings are messages printed in the console."
 
     - "Let's just expand a file."
+    - Expand( archiveFilename = "/xxx.tar", destination = "/var/lib" )
 
-    - Expand( archiveFilename = "/jre.tar", destination = "/var/lib" )
+    - "Let's create a user with lots of defaults."
+    - User( name = "alice" )
+
+    - "Another one, with more explicit values."
+    - User( name = "bob", group = "bob", uid = 1002 )
+
+    - "Run some complex task, and capture output."
+    val find =
+    - ExecuteCommand( "find", "/home", "-name", "*.pdf" )
+
+    - "Let's declare a boolean variable known as a 'flag'."
+    val pdfPresenceFlag = newFlag()
+
+    - "Now we set if if we found something."
+    - "The 'If' (uppercase 'I') is a function. It receives the flag as a separate argument, "
+    - "so it can wait until the value gets assigned (in this case, the 'find' command ran) "
+    - "synchronously, so it is). After that it applies a predicate."
+    - "The 'it' value is closure's parameter, when there is only one."
+    - "Please note that static typing applies."
+    If( find, { it.returnCode == 0 } ) {
+      - "Found something."
+      - RaiseFlag( pdfPresenceFlag )
+    }
+
+    - "Let's run some custom Action."
+    val drbdAnalysis =
+    - PrepareDrbd()
+
+    - "Here again, Action's result type is the one expected."
+    If( drbdAnalysis, { it.filesystemResize == null } ) {
+      - "DRBD already installed."
+    } Else {
+      - "DRBD needs installation."
+    }
+
 
     - "Let's run the same Action asynchronously, capturing only text output."
-
     val expand =
     - Expand(
           archiveFilename = "/jre.tar",
           destination = "/var/lib"
-      ) resultTransformedWith { it.stdout }
+      ) % { it.stdout }
       modifiers(
           defer = true,
           ignoreErrors = true,
@@ -35,11 +70,8 @@ fun main( arguments : Array< String > ) {
 
     - "Now use custom Action with specific result type."
 
-    val drbdAnalysis =
-    - PrepareDrbd()
-
-    val userAlice =
-    - User( name = "alice" )
+    val userBob =
+    - User( name = "bob" )
 
     val flag1 = newFlag()
 
@@ -52,7 +84,7 @@ fun main( arguments : Array< String > ) {
 
 
     println( expand )
-    println( userAlice )
+    println( userBob )
   }
 
   playbook.print()
