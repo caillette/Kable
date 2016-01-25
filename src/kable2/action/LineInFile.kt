@@ -1,6 +1,6 @@
 package kable2.action
 
-import kable2.Action
+import kable2.Task
 import java.util.regex.Pattern
 
 class LineInFile (
@@ -8,7 +8,7 @@ class LineInFile (
     val line : String? = null,
     val regex : Pattern? = null,
     val state : LineInFile.State? =null
-) : Action< Action.Result.ProcessExecution > {
+) : Task< Stat.Result > {
 
   enum class State {
     PRESENT, ABSENT

@@ -19,20 +19,20 @@ open class Playbook( initializer : Playlist.() -> Unit ) : Playlist() {
 */
 
   private fun print( indent : String, playlist : Playlist ) {
-    for( action in playlist.actions ) {
+    for( action in playlist.tasks) {
       print( indent, action )
     }
   }
 
-  private fun print( indent : String, action : Action< * > ) {
-    if( action is Branching ) {
+  private fun print( indent : String, task : Task< * > ) {
+    if( task is Branching ) {
       println( "$indent[Branching]")
-      for( branch in action.branches ) {
+      for( branch in task.branches ) {
         println( "$indent  ${branch.deferred} ${branch.predicate}" )
         print( indent + "    ", branch.playlist )
       }
     } else {
-      println( "$indent$action")
+      println( "$indent$task")
     }
   }
 

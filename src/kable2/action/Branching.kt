@@ -1,17 +1,17 @@
 
 package kable2.action
 
-import kable2.Action
 import kable2.Playlist
+import kable2.Task
 import tooling.Deferred
 
 class Branching(
     val branches : List< Branching.Branch< * > >
-) : Action< Action.Result.Compound > {
+) : Task< Task.Result.Compound > {
 
-  class Branch< T >(
-      val deferred : Deferred<T>,
-      val predicate : ( T ) -> Boolean,
+  class Branch< RESULT >(
+      val deferred : Deferred< RESULT >,
+      val predicate : ( RESULT ) -> Boolean,
       val playlist : Playlist
   )
 

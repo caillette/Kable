@@ -10,9 +10,9 @@ import java.util.*
 
 open class Playlist {
 
-  private val _actions = ArrayList< Action< * > >()
+  private val _actions = ArrayList< Task< * > >()
 
-  val actions : List< Action< * > >
+  val tasks : List< Task< * > >
     get() = ArrayList( _actions )
 
 
@@ -24,8 +24,8 @@ open class Playlist {
     _actions.add( ConsoleMessage( this ) )
   }
 
-  operator fun< RESULT > Action< RESULT >.unaryMinus() : Deferred< RESULT > {
-    /** Here we should tie the [Action] and the [Deferred] objects together. */
+  operator fun< RESULT > Task< RESULT >.unaryMinus() : Deferred< RESULT > {
+    /** Here we should tie the [Task] and the [Deferred] objects together. */
     _actions.add( this )
     return Deferred()
   }
@@ -43,7 +43,7 @@ open class Playlist {
       runOnce : Boolean = true,
       timeout : Int = 10000
   ) {
-    /** Modify last-added [Action]. */
+    /** Modify last-added [Task]. */
   }
 
   interface ContinuationKeywordAcceptor< RAW, TRANSFORMED > {

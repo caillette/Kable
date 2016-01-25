@@ -1,11 +1,11 @@
 package kable2.action
 
-import kable2.Action
+import kable2.Task
 
 class Expand(
     val archiveFilename : String,
     val destination : String
-) : Action< Action.Result.ProcessExecution > {
+) : Task< Task.Result.ProcessExecution > {
 
 
 }

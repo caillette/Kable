@@ -1,10 +1,10 @@
 package kable2.action
 
-import kable2.Action
+import kable2.Task
 
 class Stat (
     val file : String
-) : Action< Stat.Result > {
+) : Task< Stat.Result > {
 
   class Result( val exists : Boolean )
 

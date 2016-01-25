@@ -2,7 +2,7 @@ package kable2
 
 import tooling.Duration
 
-interface Action< RESULT > {
+interface Task< RESULT > {
 
   interface Result {
 
