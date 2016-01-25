@@ -1,7 +1,7 @@
-package kable2.extension
+package kable.extension
 
+import kable.Task
 import kable.descriptor.DrbdAnalysis
-import kable2.Task
 
 class PrepareDrbd : Task< DrbdAnalysis >
 

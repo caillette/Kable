@@ -1,8 +1,8 @@
 
-package kable2.action
+package kable.action
 
-import kable2.Playlist
-import kable2.Task
+import kable.Playlist
+import kable.Task
 import tooling.Deferred
 
 class Branching(

@@ -1,12 +1,12 @@
 package kable.action
 
-import kable.Action
+import kable.Task
 
 class User(
     val name : String,
     group : String? = null,
     val uid : Int? = null
-) : Action {
+) : Task< Task.Result.ProcessExecution > {
 
   private val _group : String
 

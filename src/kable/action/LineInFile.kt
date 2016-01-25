@@ -1,6 +1,6 @@
-package kable2.action
+package kable.action
 
-import kable2.Task
+import kable.Task
 import java.util.regex.Pattern
 
 class LineInFile (

@@ -1,9 +1,9 @@
 package kable.action
 
-import kable.Action
+import kable.Task
 import tooling.Flag
 
-class RaiseFlag(val flag : Flag ) : Action {
+class RaiseFlag( val flag : Flag ) : Task< Task.Result.None > {
 
 
 }

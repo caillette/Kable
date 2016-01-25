@@ -1,35 +1,29 @@
 package kable
 
-import java.util.*
+import kable.action.Branching
 
 
-class Playbook : Playlist() {
+open class Playbook( block : Playlist.() -> Unit ) : Playlist() {
 
-  private val _actions = ArrayList< Action >()
-
-  companion object {
-    fun new( initializer : Playlist.() -> Unit ) : Playbook {
-      val playbook = Playbook()
-      playbook.initializer()
-      return playbook
-    }
+  init {
+    this.block()
   }
 
   private fun print( indent : String, playlist : Playlist ) {
-    for( action in playlist.actions ) {
+    for( action in playlist.tasks) {
       print( indent, action )
     }
   }
 
-  private fun print( indent : String, action : Action ) {
-    if( action is BranchingAction ) {
+  private fun print( indent : String, task : Task< * > ) {
+    if( task is Branching ) {
       println( "$indent[Branching]")
-      for( branch in action.branches ) {
+      for( branch in task.branches ) {
         println( "$indent  ${branch.deferred} ${branch.predicate}" )
         print( indent + "    ", branch.playlist )
       }
     } else {
-      println( "$indent$action")
+      println( "$indent$task")
     }
   }
 

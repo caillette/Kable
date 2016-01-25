@@ -1,7 +1,7 @@
 package kable.action
 
-import kable.Action
+import kable.Task
 
-class ConsoleMessage( val text : String ) : Action {
+class ConsoleMessage( val text : String ) : Task< Task.Result.None > {
 
 }

@@ -1,4 +1,4 @@
-package kable2
+package kable
 
 import tooling.Duration
 

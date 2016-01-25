@@ -1,87 +1,63 @@
+
 package kable
 
+import kable.action.Branching
 import kable.action.ConsoleMessage
-import tooling.ActionResult
 import tooling.Connection
 import tooling.Deferred
 import tooling.Flag
 import java.util.*
 
-
 open class Playlist {
 
-  private val _actions = ArrayList< Action >()
+  private val _actions = ArrayList< Task< * > >()
+
+  val tasks : List< Task< * > >
+    get() = ArrayList( _actions )
+
+
+// ====================
+// Playlist elaboration
+// ====================
 
   operator fun String.unaryMinus() {
     _actions.add( ConsoleMessage( this ) )
   }
 
-  operator fun Action.unaryMinus() : Deferred< ActionResult >{
+  operator fun< RESULT > Task< RESULT >.unaryMinus() : Deferred< RESULT > {
+    /** Here we should tie the [Task] and the [Deferred] objects together. */
     _actions.add( this )
     return Deferred()
   }
 
-  infix fun < RESULT > add( action : Action ) : Deferred< RESULT >{
-    _actions.add( action )
+  infix fun< RAW, TRANSFORMED > Deferred< RAW >.resultTransformedBy(
+      transformer : ( RAW ) -> TRANSFORMED
+  ) : Deferred< TRANSFORMED > {
     return Deferred()
   }
 
-  fun< RAW, TRANSFORMED > capture(
-      deferred : Boolean = false ,
-      transformer : ( ( RAW ) -> TRANSFORMED )? = null
-  ) : OnKeywordAcceptor< RAW, TRANSFORMED > {
-    return object : OnKeywordAcceptor< RAW, TRANSFORMED > {
-      override fun on( deferredResult : Deferred< RAW > ) : Deferred< TRANSFORMED > {
-        if( transformer == null ) {
-          return Deferred()
-        } else {
-          return Deferred()
-        }
-      }
-    }
+  fun modifiers(
+      defer : Boolean = false,
+      connection : Connection = Connection.REMOTE,
+      ignoreErrors : Boolean = true,
+      runOnce : Boolean = true,
+      timeout : Int = 10000
+  ) {
+    /** Modify last-added [Task]. */
   }
 
-  fun justCapture(
-      deferred : Boolean = false
-  ) : OnKeywordAcceptor< ActionResult, ActionResult > {
-    return capture( deferred, null )
-  }
-
-/*
-  fun< A > capture(
-      deferred : Boolean = false
-  ) : OnKeywordAcceptor< A, A > {
-    return object : OnKeywordAcceptor< A, A > {
-      override fun on( deferredActionResult : Deferred< A > ) : Deferred< A > {
-        return Deferred()
-      }
-    }
-  }
-*/
-
-  interface OnKeywordAcceptor< RAW, TRANSFORMED > {
+  interface ContinuationKeywordAcceptor< RAW, TRANSFORMED > {
     infix fun on( deferredResult : Deferred< RAW > ) : Deferred< TRANSFORMED >
   }
 
-  @Deprecated( "", ReplaceWith("Deferred()", "tooling.Deferred" ) )
-  fun deferredResult() : Deferred< ActionResult > {
-    // TODO: grap a reference to last-added Action, if it supports deferring.
-    return Deferred()
-  }
 
-  fun< T > deferredResult( transformer : ( ActionResult ) -> T ) : Deferred< T > {
-    return Deferred()
-  }
+// =========
+// Factories
+// =========
 
   fun newFlag() : Flag {
     return Flag()
   }
-
-  val actions : List< Action >
-    get() = ArrayList( _actions )
-
-
-
 
   companion object {
     fun new( initializer : Playlist.() -> Unit ) : Playlist {
@@ -91,37 +67,33 @@ open class Playlist {
     }
   }
 
-  fun modifiers(
-      connection : Connection = Connection.REMOTE,
-      ignoreErrors : Boolean = true,
-      runOnce : Boolean = true,
-      timeout : Int = 10000
+
+// ============
+// Conditionals
+// ============
+
+  fun onlyIf( flag : Deferred< Boolean > ) {
+
+  }
+
+  fun< T > onlyIf(
+      deferred : Deferred< T >,
+      predicate : ( T ) -> Boolean
   ) {
 
   }
-  
-  fun onlyIf( flag : Deferred< Boolean > ) {
-    
-  }
-  
-  fun< T > onlyIf(       
-      deferred : Deferred< T >,
-      predicate : ( T ) -> Boolean
-  ) {
-    
-  }
-  
+
   fun unless( flag : Deferred< Boolean > ) {
-    
+
   }
-  
-  fun< T > unless(       
+
+  fun< T > unless(
       deferred : Deferred< T >,
       predicate : ( T ) -> Boolean
   ) {
-    
+
   }
-  
+
 
   fun If(
       flag : Deferred< Boolean >,
@@ -135,22 +107,22 @@ open class Playlist {
       predicate : ( T ) -> Boolean,
       block : Playlist.() -> Unit
   ) : ElseClauseAcceptor {
-    val branchList : MutableList< BranchingAction.Branch< * > > = ArrayList()
-    branchList.add( BranchingAction.Branch( deferred, predicate, Playlist.new( block ) ) )
-    _actions.add( BranchingAction( branchList ) )
+    val branchList : MutableList< Branching.Branch< * > > = ArrayList()
+    branchList.add( Branching.Branch( deferred, predicate, Playlist.new( block ) ) )
+    _actions.add( Branching( branchList ) )
 
     // Code below will perform a side-effect on branchList after we added it to _actions
     // But it should be OK.
     return object : ElseClauseAcceptor {
       override fun Else( block : Playlist.() -> Unit ) {
-        branchList.add( BranchingAction.Branch(
+        branchList.add( Branching.Branch(
             deferred, { ! predicate.invoke( it ) }, Playlist.new( block ) ) )
       }
     }
   }
 
-
 }
+
 
 interface ElseClauseAcceptor {
   infix fun Else( block : Playlist.() -> Unit )

@@ -1,12 +1,11 @@
 package kable.action
 
-import kable.Action
-import java.io.DataOutputStream
+import kable.Task
 
 class Expand(
     val archiveFilename : String,
     val destination : String
-) : Action {
+) : Task< Task.Result.ProcessExecution > {
 
 
 }

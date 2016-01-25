@@ -1,6 +1,6 @@
-package kable2.action
+package kable.action
 
-import kable2.Task
+import kable.Task
 
 class Stat (
     val file : String

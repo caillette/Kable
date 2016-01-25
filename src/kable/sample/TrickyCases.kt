@@ -1,12 +1,12 @@
 
-package kable2.sample
+package kable.sample
 
-import kable2.Playbook
-import kable2.action.Expand
-import kable2.action.RaiseFlag
-import kable2.action.RunProcess
-import kable2.action.User
-import kable2.extension.PrepareDrbd
+import kable.Playbook
+import kable.action.Expand
+import kable.action.RaiseFlag
+import kable.action.RunProcess
+import kable.action.User
+import kable.extension.PrepareDrbd
 import tooling.Connection
 
 fun main( arguments : Array< String > ) {

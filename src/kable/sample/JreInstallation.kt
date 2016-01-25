@@ -1,10 +1,10 @@
 
-package kable2.sample
+package kable.sample
 
-import kable2.Playbook
-import kable2.action.DoFile
-import kable2.action.RunProcess
-import kable2.action.Stat
+import kable.Playbook
+import kable.action.DoFile
+import kable.action.RunProcess
+import kable.action.Stat
 
 fun main( arguments : Array< String > ) {
 
