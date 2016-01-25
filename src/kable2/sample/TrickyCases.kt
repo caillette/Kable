@@ -2,9 +2,9 @@
 package kable2.sample
 
 import kable2.Playbook
-import kable2.action.ExecuteCommand
 import kable2.action.Expand
 import kable2.action.RaiseFlag
+import kable2.action.RunProcess
 import kable2.action.User
 import kable2.extension.PrepareDrbd
 import tooling.Connection
@@ -13,20 +13,11 @@ fun main( arguments : Array< String > ) {
 
   val playbook = Playbook.new {
 
-    - "Plain strings are messages printed in the console."
 
-    - "Let's just expand a file."
-    - Expand( archiveFilename = "/xxx.tar", destination = "/var/lib" )
-
-    - "Let's create a user with lots of defaults."
-    - User( name = "alice" )
-
-    - "Another one, with more explicit values."
-    - User( name = "bob", group = "bob", uid = 1002 )
 
     - "Run some complex task, and capture output."
     val find =
-    - ExecuteCommand( "find", "/home", "-name", "*.pdf" )
+    - RunProcess( "find /home -name *.pdf" )
 
     - "Let's declare a boolean variable known as a 'flag'."
     val pdfPresenceFlag = newFlag()
@@ -59,7 +50,7 @@ fun main( arguments : Array< String > ) {
     - Expand(
           archiveFilename = "/jre.tar",
           destination = "/var/lib"
-      ) % { it.stdout }
+      ) resultTransformedBy { it.stdout }
       modifiers(
           defer = true,
           ignoreErrors = true,
@@ -67,6 +58,7 @@ fun main( arguments : Array< String > ) {
           runOnce = true,
           timeout = 100000
       )
+      unless( pdfPresenceFlag )
 
     - "Now use custom Action with specific result type."
 
@@ -88,6 +80,8 @@ fun main( arguments : Array< String > ) {
   }
 
   playbook.print()
+
+//  Thread.sleep( 5000 )
 
 }
 

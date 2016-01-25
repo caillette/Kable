@@ -30,7 +30,7 @@ open class Playlist {
     return Deferred()
   }
 
-  operator fun< RAW, TRANSFORMED > Deferred< RAW >.mod(
+  infix fun< RAW, TRANSFORMED > Deferred< RAW >.resultTransformedBy(
       transformer : ( RAW ) -> TRANSFORMED
   ) : Deferred< TRANSFORMED > {
     return Deferred()
