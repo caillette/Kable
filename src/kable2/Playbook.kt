@@ -3,8 +3,12 @@ package kable2
 import kable2.action.Branching
 
 
-class Playbook : Playlist() {
+open class Playbook( initializer : Playlist.() -> Unit ) : Playlist() {
 
+  init {
+    this.initializer()
+  }
+/*
   companion object {
     fun new( initializer : Playlist.() -> Unit ) : Playbook {
       val playbook = Playbook()
@@ -12,6 +16,7 @@ class Playbook : Playlist() {
       return playbook
     }
   }
+*/
 
   private fun print( indent : String, playlist : Playlist ) {
     for( action in playlist.actions ) {

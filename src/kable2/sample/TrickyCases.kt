@@ -11,9 +11,7 @@ import tooling.Connection
 
 fun main( arguments : Array< String > ) {
 
-  val playbook = Playbook.new {
-
-
+  val playbook = Playbook() {
 
     - "Run some complex task, and capture output."
     val find =
