@@ -21,18 +21,18 @@ fun main( arguments : Array< String > ) {
 
     /**
      * Run a process again and grab the result in the `echo` value.
-     * Its type resolves to [tooling.Deferred] because we don't execute the [Action] yet
+     * Its type resolves to [Deferred] because we don't execute the [Task] yet
      * (we just recorded it).
-     * Type parameter is [Action.Result.ProcessExecution] so we'll extract
+     * Type parameter is [Task.Result.ProcessExecution] so we'll extract
      * a type-safe result when available.
      */
     val echo =
     - RunProcess( "echo 'Hello Kotlin!' " )
 
     /**
-     * Run an [Action] with compound actions and alternatives.
+     * Run a [Task] with compound actions and alternatives.
      * [kable2.Playlist#If] (note the uppercase) is a function.
-     * First parameter is the [tooling.Deferred] object, second parameter is a predicate
+     * First parameter is the [Deferred] object, second parameter is a predicate
      * to apply on it when the [Playbook] runs. The `it` parameter is a default parameter
      * name when there is only one.
      */
@@ -44,7 +44,7 @@ fun main( arguments : Array< String > ) {
     }
 
     /**
-     * We can run more dedicated [Action]s.
+     * We can run more dedicated [Task]s.
      * This one creates a Unix user with lots of defaults.
      */
     - User( name = "alice" )
@@ -58,7 +58,7 @@ fun main( arguments : Array< String > ) {
   }
 
   /**
-   * Print every recorded [Action] (and compound [Action]s if any).
+   * Print every recorded [Task] (and compound [Task]s if any).
    */
   playbook.print()
 
