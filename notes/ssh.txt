@@ -1,0 +1,7 @@
+
+"How to use the ssh-agent programmatically for RSA signing"
+http://ptspts.blogspot.hu/2010/06/how-to-use-ssh-agent-programmatically.html
+
+
+"SSH Frequently Asked Questions -- How does ssh-agent work?-_"
+http://www.snailbook.com/faq/about-agent.auto.html
