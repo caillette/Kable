@@ -1,0 +1,201 @@
+
+== Démarrage
+
+On exécute un Playbook à partir d'un programme Java ou Kotlin. Toute la configuration est basée sur du code compilé.
+
+L'exécution du Playbook établit tout d'abord une connection SSH.
+
+Un script Bash vérifie la configuration de la machine distante :
+- Présence d'un ``~/.kable``.
+- Présence de l'exécutable ``kotlin``.
+- Présence des bibliothèques Kable.
+ 
+S'il manque des prérequis, le script essaye de les installer (sauf si l'option est désactivée).
+
+Après on a deux modes de fonctionnement possibles :
+
+- Établir une connection par hôte et par Playbook.
+- Établir une connection par hôte au travers d'un démon qui survit à l'exécution d'un Playbook.
+
+La deuxième solution nous rapproche de SaltStack qui utilise un bus. Dans tous les cas il faut rester avec du SSH. La connection persistante ne fonctionne pas dans de nombreux cas, notamment si on modifie la configuration SSH locale ou distante. Mais les Actions qui font ça peuvent l'indiquer, de façon à recréer la connection.
+ 
+Le cas idéal c'est :
+- Un tunnel SSH par hôte et par Playbook.
+- La connection survit au Playbook, c'est à dire qu'un démon Kable fonctionne sur le hôte distant. 
+- Une Action peut demander à recréer la connection, avec de nouveaux paramètres éventuellement.
+
+Un démon distant s'arrête tout seul au bout d'une minute (par défaut), on n'est pas en train de créer une solution de surveillance en continu.
+
+Le démon distant sait recharger des Actions personnalisées.
+
+Le démon local permet une interface Web.
+
+
+== SSH
+
+Modifier ou adapter SSHJ pour supporter :
+- Le SSH Agent.
+- L'Agent Forwarding.
+
+Alternative : lancer SSH dans un process, et rediriger les entrées-sorties en mode Funnel.
+
+
+== Actions personnalisées
+
+Faisons comme si Kable était une bibliothèque en version stable. Dans tous les cas on souhaite distribuer du code exécutable à distance, notamment dans le cas de la création d'Actions personnalisées.
+
+Dans ce cas le Player (celui qui fait tourner les Playbooks) regarde s'il y a des classes invalidées. Ça veut dire qu'il possède un cache.
+
+Un démarrage standard de Playbook commence par se connecter au Player, démarrant celui-ci en cas d'échec.
+
+Un démarrage "page blanche" tente d'abord de terminer le Player s'il y en avait un.
+
+La réinstallation d'un Kable distant se fait grâce à une option de la commande initiale passée par SSH.
+
+Une option pour le développement c'est de taper dans un Shared Folder d'une VirtualBox. Il suffit de redémarrer pour que les modifications soient prises en compte.
+
+
+== SSH Primer
+
+Le SSH Primer est la commande initiale envoyée par SSH. C'est elle qui effectue la configuration.
+
+- Option : installer Kotlin si absent (au lieu de balancer une erreur).
+  - Option : installation via un repo distant.
+  - Option : installation via une archive obtenue à partir de stdin (variante du tarpipe).
+- Option : version stable de Kable (sinon, utilisation de la version du Player).
+- Option : redémarrer le Genius qui tourne comme démon.
+- Option : pas de Genius, on pipe sur le stdout-stderr (mode Funnel). Ça évite de lancer une deuxième connection. C'est le premier mode de transport à coder.
+
+Il y a un peu de bordel terminologique à démêler.
+- On a deux modes de transport : Funnel et Tunnel.
+- On a deux façons de faire fonctionner le Genius : Transient (avec Tunnel) et Remanent (avec Funnel).
+
+Le protocole dans tous les cas c'est des chaînes de caractères URL-encodées. On met autant de préfixes magiques que nécessaire pour trier les patates à la sortie.
+
+La plus grosse contrainte c'est au niveau de la concurrence d'accès supportée par le Genius. Celui-ci fonctionne par-dessus le Tunnel ou le Funnel. Dans le second cas il y a une instance de Genius par connection SSH.
+
+
+=== Sessions
+
+Dans le ``~/.kable`` on veut conserver :
+- Une version stable de Kable. Ça c'est si on n'est pas en mode dev.
+- Un répertoire temporaire pour la session Kable initiée par le Player.
+
+Dans le cas du Funnel, on a plusieurs Genius qui veulent accéder au même répertoire de session. Par exemple pour garantir un accès exclusif lors du téléchargement d'une mise à jour.
+
+Ce qui est fort c'est qu'on peut ouvrir des descripteurs de fichiers directement à partir du Bash. Après il faut les repasser à la JVM. Voir l'excellent tutoriel sur les "redirections"
+http://www.catonmat.net/blog/bash-one-liners-explained-part-three
+. Mais en a-t-on vraiment besoin ? Pour une fois on peut faire confiance au client (Player).
+
+<<<
+~
++-.kable/
+  +-framework/
+  | +-Kable-1.0.1/
+  | \-Kable-1.0.2/
+  +-sessions/
+    +-alice@somehost,com.acme.some.project.FooPlaybook/
+    | +-packaged/
+    | | +-org.whatever-0.0.1.jar
+    | | +-org.anything-1.2.3.jar
+    | \-2016-02-26_11.45.12_098fdFd0/
+    |   +-dependencies.txt
+    |   +-play.log
+    |   +-scratch/
+    |   \-playbook-classpath/
+    |     +-...
+    \-bob@hislaptop,com.acme.other.project.BarPlaybook/
+      \-2016-02-26_11.46.22_DFg0MJkf/
+>>>
+
+| ``.kable``                   | Juste un répertoire à effacer pour tout nettoyer.   |
+| ``sessions``                 | Une session correspond à une exécution du Player.   |
+| ``[user]@[host],[playbook]`` | Le Playbook d'un utilisateur sur sa machine.        |
+| ``packaged``                 | Les dépendances à considérer comme immuables.       |
+| ``[timestamp]_[identifier]`` | L'exécution d'un Playbook.                          |
+| ``dependencies``             | Liste des dépendances (pour nettoyer ``packaged``). |
+| ``playbook-classpath``       | Le code exécutable envoyé par le Player.            |
+
+Le premier Genius qui parvient à créer le répertoire de la session (``[timestamp]_[identifier]``) se charge de la mise à jour, pendant que les autres attendent (si on est très fort, on exécute par anticipation les Actions standard qui sont indépendantes).
+
+Si on utilise une version de dev de Kable, on télécharge les jars pour chaque Playbook, avec toujours la possibilité d'un lien symbolique vers un Shared Folder. Il suffit de savoir résoudre le lien symbolique au démarrage. Ou, comme le Player connaît tous les détails par avance, il peut ne rien télécharger, se contentant de fournir les bons chemins au SSH Primer.
+
+Pour faire le ménage, on efface tous les répertoires des sessions âgées de plus de 24 heures, //heure du Player//. Pour faire le ménage dans ``packaged`` on regarde ce qui reste comme dépendances des sessions non-effacées. Il y a un problème de concurrence d'accès, si on démarre une session qui rajoute une dépendance qu'on allait effacer. Une technique acceptable consiste à ne nettoyer que ce qui correspond au Playbook en cours, et à considérer que l'utilisateur n'étant pas idiot, il n'exécute pas le même Playbook de façon concurrente. C'est alors le Genius chargé de préparer la session qui fait le ménage à la fin. Au pire on bute tout le répertoire ``sessions``
+
+
+=== Pot commun des connections
+
+On peut démarrer le Player avec une option pour tenter de joindre le ``Telephonist`` qui contient des paires de connections identifiées par la paire (hôte, utilisateur). Il faut ajouter des caractéristiques du genre une clé de hachage sur les options (voilà pourquoi ça serait bon de tout faire avec SSHJ) pour les cas où on ferait des trucs bizarres.
+
+L'utilisateur d'une connexion peut l'invalider explicitement, autrement elle est recyclée automatiquement.
+
+Le Telephonist est d'abord un contrat ; il peut être un processus qui doit survivre aux multiples exécutions. L'activation a lieu à partir d'un Player :
+- Tentative de connexion.
+- Si échec, tentative de création du démon avec fourchage du processus.
+  - Le processus fourché tente d'ouvrir la prise serveur avec un retrait exponentiel.
+
+Le Telephonist s'arrête après un certain temps d'inactivité (disons, 1 heure).
+
+Pour garantir que n'importe quel programme ne peut pas se connecter au ``Telephonist`` on crée un fichier ```~/.kable/player/secret.txt``. (Si le SSH Agent permet ce genre de choses c'est son problème, comme son utilisation est facultative on ne peut pas s'aligner sur son niveau de sécurité.)
+
+
+== Jython
+
+Le code des Modules Ansible est minimal, afin de tourner sur un maximum de plateformes. Il est possible qu'il tourne dans Jython. Dans ce cas il "suffit" de créer des Actions en Kotlin pour faire le passe-plat.
+
+De ce fait on pourrait vendre Kable comme une couche de Java par-dessus Ansible. Ça serait une façon de faire de la pub à Kable à travers les canaux d'Ansible (même si ça trahit complètement l'objectif de vendre du Tower).
+
+
+== Glossaire
+
+**Player** : Coordonne l'exécution d'un Playbook. Utilise les autres services comme le Telephonist.
+
+**Telephonist** : fournit une connexion SSH pour un triplet (utilisateur, hôte, options). Il existe une variante à durée de vie longue pour réutiliser les connexions entre exécutions de Playbooks.
+
+**Genius** : s'exécute sur le hôte-cible. Effectue la mise à jour des fichiers locaux, démarre les Actions, renvoie le résultat. Plusieurs Genius peuvent s'exécuter concurremment sur le même hôte-cible. Ils communiquent entre eux par des fichiers (typiquement, se baser sur la création réussie d'un répertoire pour s'assurer de l'accès exclusif). Le Genius communique avec le client SSH par ``stdin``, ``stdout``, ``stderr``. On laisse tomber le tunnel (port-forwarding).
+
+Un Telephonist initie un Genius par connexion. Mais si un Genius est attaché à une session Kable, on ne peut pas le réutiliser. //Ou alors// on dit qu'un Genius ne supporte qu'une session Kable à la fois, et qu'on peut les réutiliser. Ça c'est mieux. Un Genius est nécessairement rattaché à l'utilisateur sous l'identité duquel on a ouvert la session SSH.
+
+On peut assimiler un Genius à une JVM sur le hôte-cible. Tant qu'on ne fait rien ça n'ouvre que 90 ports dont 50 fichiers, démarre seulement 23 threads, et pèse juste 80 Mo.
+
+Si on a une connexion ``root`` et une ``applicationuser`` ça fait juste 200 Mo. Il faut une option pour limiter. Ou pas.
+
+Avec ce fonctionnement du Genius, plus besoin de distinguer Funnel et Tunnel. On a le Telephonist qui crée des connexions et qui les fait perdurer, éventuellement.
+
+
+== Comparaison avec Ansible et Python
+
+Par comparaison un ``-command: sleep 1000`` avec Ansible donne ça :
+
+<<<
+# ps -em -o user,rss,command | grep otcdlink
+root      5660 sshd: otcdlink [priv]
+otcdlink  3396 sshd: otcdlink@pts/0
+otcdlink  3756 -bash
+root      5784 sshd: otcdlink [priv]
+otcdlink  5028 sshd: otcdlink@pts/1
+otcdlink  2664 bash -c LANG=fr_FR.UTF-8 LC_ALL=fr_FR.UTF-8 LC_MESSAGES=fr_FR.UTF-8 /usr/bin/python /home/otcdlink/.ansible/tmp/ansible-tmp-1456503574.3-175405763396619/command; rm -rf "/home/otcdlink/.ansible/tmp/ansible-tmp-1456503574.3-175405763396619/" > /dev/null 2>&1
+otcdlink 11912 /usr/bin/python /home/otcdlink/.ansible/tmp/ansible-tmp-1456503574.3-175405763396619/command
+otcdlink   684 sleep 1000
+root      2164 grep otcdlink
+>>>
+
+La taille RSS (Resident Set Size) est en kB, donc ça fait `14,6 MB`.
+
+La JVM c'est juste du ``«time» 10`. Et encore on n'a pas vu ce que coûtait le Jython.
+
+En revanche, chaque commande Ansible c'est un nouvel interpréteur Python qui se tape un fichier de 2000 lignes généré dynamiquement.
+
+On comprend pourquoi PalletOps génère du Bash : le coût de l'interpréteur est nul.
+
+L'alternative c'est de compiler des modules en C. Ou en Rust ? Une fois que c'est compilé, on n'a pas des centaines de fichiers comme avec les ``.class`` de Java, donc on peut checksummer. Il n'y a pas de machine virtuelle à démarrer. Il faut encore que le compilateur supporte des plateformes étrangères (cross-compilation). Tout ça rappelle ConnectD qui se base sur du C pour les mêmes raisons.
+
+Mais bon rajouter `500 Mo` de JVM le temps d'un déploiement au final c'est rien. Il faut juste ne pas laisser les JVM durer trop longtemps pour ne pas polluer les stats. En contrepartie on peut bénéficier d'une JVM avec toutes les classes (Kotlin, Jython) préchargées, ainsi que d'une connexion SSH préétablie.
+
+
+== Piston
+
+Est-il possible de réutiliser ce qui est fait ici dans Piston ? L'approche la plus simple, c'est de repomper ce qui se fait dans Piston, l'adapter à Kotlin, faire fonctionner Kable, et réimporter ce qu'on peut dans une nouvelle version de Piston.
+
+Les connexions SSH initiées par Piston durent plus longtemps qu'une simple commande Ansible ; elles sont destinées à durer des heures et les résultats sont remontés au fil de l'eau. Les commandes Ansible ne font pas ça (elles renvoient un document JSON d'un seul coup). Il faut donc un contrat de bas niveau pour le fil de l'eau, et un contrat pour l'exécution d'une Action.
+
